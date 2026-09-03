@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalori Takip</title>
+</head>
+<body>
+  <h1>Kalori Takip</h1>
+    <div id="ozet" style="padding:12px;background:#e8f5e9;border-radius:10px;margin-bottom:12px">
+    <span id="ozetKal" style="font-size:28px;font-weight:bold">0</span> kcal
+    &nbsp;·&nbsp;
+    <span id="ozetPro" style="font-size:28px;font-weight:bold">0</span> g protein
+  </div>
+  <input id="giris" type="text" placeholder="Örnek: 200 gr salatalık yedim" size="32">
+  <button id="ekleBtn">Ekle</button>
+  <p id="sonuc"></p>
+  <div id="manuelForm" style="display:none">
+    <p>Bu yemeği tanımadım — listeden seç:</p>
+    <select id="secYemek"></select>
+    <input id="secGram" type="number" placeholder="gram" style="width:90px">
+    <button id="manuelBtn">Ekle</button>
+    <div id="yeniSatir" style="display:none">
+      <input id="yeniAd" type="text" placeholder="yeni yemek adı">
+      <input id="yeniKal" type="number" placeholder="kalori (100 gramda)" style="width:150px">
+      <input id="yeniPro" type="number" placeholder="protein (100 gramda)" style="width:150px">
+    </div>
+  </div>
+    <h2>Bugün yediklerim</h2>
+  <ul id="gunListesi"></ul>
+</body>
+<script>
+  // YEMEK LİSTESİ — değerler 100 GRAM başına: [kalori, protein]
+  const YEMEKLER = {
+    // Sebze & Meyve
+    "salatalık": [15, 0.7],
+    "domates": [18, 0.9],
+    "yeşil biber": [20, 0.9],
+    "patlıcan": [25, 1],
+    "kabak": [17, 1.2],
+    "havuç": [41, 0.9],
+    "patates": [87, 2],
+    "soğan": [40, 1.1],
+    "marul": [15, 1.4],
+    "ıspanak": [23, 2.9],
+    "brokoli": [34, 2.8],
+    "mantar": [22, 3.1],
+    "avokado": [160, 2],
+    "muz": [89, 1.1],
+    "elma": [52, 0.3],
+    "portakal": [47, 0.9],
+    "üzüm": [69, 0.7],
+    "karpuz": [30, 0.6],
+    "kavun": [34, 0.8],
+    "çilek": [32, 0.7],
+    // Et, Tavuk, Balık (yumurta: 1 adet ≈ 50 gram)
+    "yumurta": [155, 13],
+    "tavuk göğsü": [165, 31],
+    "tavuk but": [209, 26],
+    "tavuk": [180, 27],
+    "kıyma": [240, 25],
+    "köfte": [240, 17],
+    "dana eti": [220, 26],
+    "kuzu eti": [294, 25],
+    "sucuk": [300, 18],
+    "somon": [208, 20],
+    "hamsi": [130, 19],
+    "uskumru": [150, 18],
+    "ton balığı": [116, 26],
+    // Süt Ürünleri
+    "süt": [61, 3.2],
+    "yoğurt": [61, 3.5],
+    "süzme yoğurt": [97, 9],
+    "ayran": [37, 1.6],
+    "beyaz peynir": [264, 17],
+    "kaşar peyniri": [330, 24],
+    "lor peyniri": [98, 12],
+    // Tahıl & Ana Yemekler
+    "beyaz ekmek": [265, 9],
+    "tam buğday ekmeği": [247, 13],
+    "pilav": [130, 2.7],
+    "bulgur pilavı": [120, 3.1],
+    "makarna": [158, 5.8],
+    "kuru fasulye": [120, 7],
+    "nohut": [164, 9],
+    "mercimek çorbası": [90, 4.5],
+    "menemen": [110, 5],
+    "omlet": [154, 11],
+    "börek": [280, 8],
+    "lahmacun": [220, 11],
+    "pide": [260, 9],
+    "pizza": [266, 11],
+    "hamburger": [250, 13],
+    "patates kızartması": [312, 3.4],
+    "simit": [300, 10],
+    "poğaça": [320, 8],
+    // Atıştırmalık & Tatlı
+    "fındık": [628, 15],
+    "ceviz": [654, 15],
+    "badem": [579, 21],
+    "yer fıstığı": [567, 26],
+    "zeytin": [115, 0.8],
+    "bal": [304, 0.3],
+    "tahin": [595, 17],
+    "sütlü çikolata": [535, 7.6],
+    "patlamış mısır": [387, 12],
+    "kurabiye": [450, 6],
+    "dondurma": [207, 3.5],
+    "baklava": [430, 6],
+    "kola": [42, 0]
+  };
+
+</script>
+<script>
+  // ---- YARDIMCILAR ----
+  // Türkçe harfleri sadeleştir: "salatalık" -> "salatalik" (eşleşme için)
+  function duzelt(metin) {
+    return metin.toLocaleLowerCase("tr")
+      .replace(/ç/g, "c")
+      .replace(/ğ/g, "g")
+      .replace(/ı/g, "i")
+      .replace(/ö/g, "o")
+      .replace(/ş/g, "s")
+      .replace(/ü/g, "u");
+  }
+
+  // 1 adet/kase/bardak ≈ kaç gram (tablosu olmayanda 100 gram varsayar)
+  const ADET_GRAM = {
+    "yumurta": 50,
+    "muz": 120,
+    "elma": 150,
+    "simit": 100,
+    "kola": 250,
+    "domates": 120,
+    "salatalık": 100,
+    "süt": 200,
+    "yoğurt": 200,
+    "ayran": 200,
+    "mercimek çorbası": 250
+  };
+
+  function bugun() {
+    const d = new Date();
+    return d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0");
+  }
+
+  function kayitlariAl() {
+    return JSON.parse(localStorage.getItem("kaloriKayitlari") || "[]");
+  }
+
+  function kayitlariKaydet(liste) {
+    localStorage.setItem("kaloriKayitlari", JSON.stringify(liste));
+  }
+
+  function ozelYemekleriAl() {
+    return JSON.parse(localStorage.getItem("ozelYemekler") || "{}");
+  }
+
+  // Gömülü liste + sonradan eklediklerin
+  function tumYemekler() {
+    return Object.assign({}, YEMEKLER, ozelYemekleriAl());
+  }
+
+  // Kayda ekle, hesabı döndür
+  function ekle(ad, gram) {
+    const deger = tumYemekler()[ad];
+    const kalori = Math.round(deger[0] * gram / 100);
+    const protein = Math.round(deger[1] * gram / 100 * 10) / 10;
+    const liste = kayitlariAl();
+    liste.push({
+      tarih: bugun(),
+      saat: new Date().toTimeString().slice(0, 5),
+      yemek: ad,
+      gram: gram,
+      kalori: kalori,
+      protein: protein
+    });
+    kayitlariKaydet(liste);
+    return { kalori: kalori, protein: protein };
+  }
+
+  // ---- AKILLI GİRİŞ ----
+  const giris = document.getElementById("giris");
+  const sonuc = document.getElementById("sonuc");
+
+  // Metindeki yemek adını bul (en uzun eşleşme kazanır)
+  function yemekBul(metin) {
+    const m = duzelt(metin);
+    const adlar = Object.keys(tumYemekler()).sort(function (a, b) {
+      return b.length - a.length;
+    });
+    for (const ad of adlar) {
+      if (m.includes(duzelt(ad))) return ad;
+    }
+    return null;
+  }
+
+  function akilliEkle() {
+    let metin = giris.value.toLocaleLowerCase("tr").replace(/\bbir\b/g, "1");
+    sonuc.textContent = "";
+    if (!metin.trim()) return;
+
+    const sayiM = metin.match(/\d+/);
+    if (!sayiM) {
+      sonuc.textContent = "Miktar bulamadım. Örnek: 200 gr salatalık yedim";
+      return;
+    }
+    const miktar = parseInt(sayiM[0]);
+
+    const ad = yemekBul(metin);
+    if (!ad) {
+      manuelAc(giris.value);
+      return;
+    }
+
+    // "gr/gram" yazılmamış ve sayı küçükse (ör. "2 yumurta") adet say
+    let gram = miktar;
+    const gramYazilmis = /gr/.test(metin);
+    const adetYazilmis = /adet|tane/.test(metin);
+    if (adetYazilmis || (!gramYazilmis && miktar < 20)) {
+      gram = miktar * (ADET_GRAM[ad] || 100);
+    }
+
+    const s = ekle(ad, gram);
+    sonuc.textContent = "✓ Eklendi: " + gram + " g " + ad + " — " + s.kalori + " kcal, " + s.protein + " g protein";
+    giris.value = "";
+  }
+
+  document.getElementById("ekleBtn").addEventListener("click", akilliEkle);
+  giris.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") akilliEkle();
+  });
+
+  // ---- TANINMAYAN YEMEK: MANUEL FORM ----
+  const manuelForm = document.getElementById("manuelForm");
+  const secYemek = document.getElementById("secYemek");
+  const secGram = document.getElementById("secGram");
+  const yeniSatir = document.getElementById("yeniSatir");
+  const yeniAd = document.getElementById("yeniAd");
+  const yeniKal = document.getElementById("yeniKal");
+  const yeniPro = document.getElementById("yeniPro");
+
+  function secListesiniYenile() {
+    secYemek.innerHTML = "";
+    const adlar = Object.keys(tumYemekler()).sort(function (a, b) {
+      return a.localeCompare(b, "tr");
+    });
+    for (const ad of adlar) {
+      const o = document.createElement("option");
+      o.value = ad;
+      o.textContent = ad;
+      secYemek.appendChild(o);
+    }
+    const y = document.createElement("option");
+    y.value = "__yeni__";
+    y.textContent = "— Listede yok, yeni yemek ekleyeceğim —";
+    secYemek.appendChild(y);
+  }
+
+  function yeniAcKapa() {
+    yeniSatir.style.display = secYemek.value === "__yeni__" ? "block" : "none";
+  }
+
+  function manuelAc(orijinalMetin) {
+    secListesiniYenile();
+    yeniAcKapa();
+    const s = orijinalMetin.match(/\d+/);
+    secGram.value = s ? s[0] : "";
+    manuelForm.style.display = "block";
+    sonuc.textContent = "Bu yemeği tanımadım — aşağıdan seç:";
+  }
+
+  secYemek.addEventListener("change", yeniAcKapa);
+  secGram.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") document.getElementById("manuelBtn").click();
+  });
+
+  document.getElementById("manuelBtn").addEventListener("click", function () {
+    const gram = parseInt(secGram.value);
+    if (!gram) {
+      sonuc.textContent = "Gram değerini yaz.";
+      return;
+    }
+    let ad;
+    if (secYemek.value === "__yeni__") {
+      ad = yeniAd.value.trim().toLocaleLowerCase("tr");
+      const kal = parseFloat(yeniKal.value);
+      const pro = parseFloat(yeniPro.value);
+      if (!ad || isNaN(kal)) {
+        sonuc.textContent = "Yeni yemek için ad ve kalori gerekli.";
+        return;
+      }
+      const ozel = ozelYemekleriAl();
+      ozel[ad] = [kal, isNaN(pro) ? 0 : pro];
+      localStorage.setItem("ozelYemekler", JSON.stringify(ozel));
+    } else {
+      ad = secYemek.value;
+    }
+    const s = ekle(ad, gram);
+    sonuc.textContent = "✓ Eklendi: " + gram + " g " + ad + " — " + s.kalori + " kcal, " + s.protein + " g protein";
+    manuelForm.style.display = "none";
+    giris.value = "";
+  });
+</script>
+<script>
+  // ---- GÜNÜN LİSTESİ ----
+  const gunListesi = document.getElementById("gunListesi");
+
+  function listeyiCiz() {
+    const hepsi = kayitlariAl();
+    const b = bugun();
+    gunListesi.innerHTML = "";
+    for (let i = 0; i < hepsi.length; i++) {
+      const k = hepsi[i];
+      if (k.tarih !== b) continue;
+      const li = document.createElement("li");
+      li.textContent = k.saat + " — " + k.gram + " g " + k.yemek +
+        " — " + k.kalori + " kcal, " + k.protein + " g protein";
+      const btn = document.createElement("button");
+      btn.textContent = "Sil";
+      btn.dataset.idx = i;
+      btn.addEventListener("click", function () {
+        const hepsi2 = kayitlariAl();
+        hepsi2.splice(parseInt(this.dataset.idx), 1);
+        kayitlariKaydet(hepsi2);
+        listeyiCiz();
+      });
+      li.appendChild(btn);
+      gunListesi.appendChild(li);
+    }
+    if (!gunListesi.children.length) {
+      gunListesi.innerHTML = "<i>Henüz bir şey eklemedin.</i>";
+    }
+  }
+
+  // Yeni kayıt eklenince liste kendiliğinden yenilensin:
+  // mevcut "ekle" fonksiyonunu sarmalıyoruz (kodu değiştirmeye gerek yok)
+  const orijinalEkle = ekle;
+  ekle = function (ad, gram) {
+    const s = orijinalEkle(ad, gram);
+    listeyiCiz();
+    return s;
+  };
+
+  // Sayfa açılınca bugünün listesini göster
+  listeyiCiz();
+</script>
+<script>
+  // ---- GÜNLÜK ÖZET ----
+  const ozetKal = document.getElementById("ozetKal");
+  const ozetPro = document.getElementById("ozetPro");
+
+  function ozetCiz() {
+    const b = bugun();
+    let kal = 0, pro = 0;
+    for (const k of kayitlariAl()) {
+      if (k.tarih !== b) continue;
+      kal += k.kalori;
+      pro += k.protein;
+    }
+    ozetKal.textContent = Math.round(kal);
+    ozetPro.textContent = Math.round(pro * 10) / 10;
+  }
+
+  // Liste her çizildiğinde (ekleme/silme) özet de kendiliğinden güncellensin
+  const orijinalCiz = listeyiCiz;
+  listeyiCiz = function () {
+    orijinalCiz();
+    ozetCiz();
+  };
+
+  // Sayfa açılınca da hesapla
+  ozetCiz();
+</script>
+</html>

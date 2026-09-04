@@ -40,18 +40,113 @@
     outline: none;
     box-shadow: 0 0 0 2px rgba(193,154,107,0.35);
   }
+  /* ---- Yeni bolumler ---- */
+  .hedefKarti {
+    background: #ffffff;
+    border: 2px solid #C19A6B;
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .hedefSatir {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .barZemin {
+    flex: 1;
+    height: 12px;
+    background: #efe6d9;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .barDolgu {
+    height: 100%;
+    background: #C19A6B;
+    border-radius: 6px;
+    width: 0%;
+  }
+  .barEtiket {
+    font-size: 13px;
+    color: #8a7561;
+    white-space: nowrap;
+  }
+  #hedefGirisi {
+    display: none;
+    margin-top: 10px;
+    gap: 8px;
+  }
+  #hedefGirisi input {
+    width: 90px;
+  }
+  .hizliBaslik {
+    margin: 14px 0 6px 0;
+    font-size: 15px;
+    color: #8a7561;
+  }
+  #hizliKutusu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  #hizliKutusu button {
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 14px;
+  }
+  #makroSatiri {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+    font-size: 14px;
+  }
+  #makroSatiri div {
+    flex: 1;
+    background: #ffffff;
+    border: 2px solid #C19A6B;
+    border-radius: 14px;
+    padding: 6px 8px;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
   <h1>Kalori Takip</h1>
-    <div id="ozet" style="padding:12px;background:#e8f5e9;border-radius:10px;margin-bottom:12px">
+  <div id="ozet" style="padding:12px;background:#e8f5e9;border-radius:10px;margin-bottom:12px">
     <span id="ozetKal" style="font-size:28px;font-weight:bold">0</span> kcal
     &nbsp;·&nbsp;
     <span id="ozetPro" style="font-size:28px;font-weight:bold">0</span> g protein
+    <div id="makroSatiri">
+      <div><b id="ozetKarb">0</b> g karb</div>
+      <div><b id="ozetYag">0</b> g yağ</div>
+    </div>
+  </div>
+  <div class="hedefKarti">
+    <div class="hedefSatir">
+      <span class="barEtiket">kalori</span>
+      <div class="barZemin"><div class="barDolgu" id="barKal"></div></div>
+      <span class="barEtiket" id="barKalYazi">0 / 2000</span>
+    </div>
+    <div class="hedefSatir" style="margin-top:6px">
+      <span class="barEtiket">protein</span>
+      <div class="barZemin"><div class="barDolgu" id="barPro"></div></div>
+      <span class="barEtiket" id="barProYazi">0 / 100</span>
+    </div>
+    <div style="text-align:right;margin-top:6px">
+      <button id="hedefBtn" style="font-size:12px;padding:4px 10px">Hedef belirle</button>
+    </div>
+    <div id="hedefGirisi">
+      <input id="hedefKal" type="number" placeholder="kcal hedefi">
+      <input id="hedefPro" type="number" placeholder="protein hedefi">
+      <button id="hedefKaydet" style="font-size:12px;padding:4px 10px">Kaydet</button>
+    </div>
   </div>
   <input id="giris" type="text" placeholder="Örnek: 200 gr salatalık yedim" size="32">
   <button id="ekleBtn">Ekle</button>
   <p id="sonuc"></p>
+  <p class="hizliBaslik">Sık eklediklerin</p>
+  <div id="hizliKutusu"></div>
   <div id="manuelForm" style="display:none">
     <p>Bu yemeği tanımadım — listeden seç:</p>
     <select id="secYemek"></select>
@@ -70,159 +165,144 @@
 <script>
   // YEMEK LİSTESİ — değerler 100 GRAM başına: [kalori, protein]
   const YEMEKLER = {
-    // Sebze & Meyve
-    "salatalık": [15, 0.7],
-    "domates": [18, 0.9],
-    "yeşil biber": [20, 0.9],
-    "patlıcan": [25, 1],
-    "kabak": [17, 1.2],
-    "havuç": [41, 0.9],
-    "patates": [87, 2],
-    "soğan": [40, 1.1],
-    "marul": [15, 1.4],
-    "ıspanak": [23, 2.9],
-    "brokoli": [34, 2.8],
-    "mantar": [22, 3.1],
-    "avokado": [160, 2],
-    "muz": [89, 1.1],
-    "elma": [52, 0.3],
-    "portakal": [47, 0.9],
-    "üzüm": [69, 0.7],
-    "karpuz": [30, 0.6],
-    "kavun": [34, 0.8],
-    "çilek": [32, 0.7],
-    // Et, Tavuk, Balık (yumurta: 1 adet ≈ 50 gram)
-    "yumurta": [155, 13],
-    "tavuk göğsü": [165, 31],
-    "tavuk but": [209, 26],
-    "tavuk": [180, 27],
-    "kıyma": [240, 25],
-    "köfte": [240, 17],
-    "dana eti": [220, 26],
-    "kuzu eti": [294, 25],
-    "sucuk": [300, 18],
-    "somon": [208, 20],
-    "hamsi": [130, 19],
-    "uskumru": [150, 18],
-    "ton balığı": [116, 26],
-    // Süt Ürünleri
-    "süt": [61, 3.2],
-    "yoğurt": [61, 3.5],
-    "süzme yoğurt": [97, 9],
-    "ayran": [37, 1.6],
-    "beyaz peynir": [264, 17],
-    "kaşar peyniri": [330, 24],
-    "lor peyniri": [98, 12],
-    // Tahıl & Ana Yemekler
-    "beyaz ekmek": [265, 9],
-    "tam buğday ekmeği": [247, 13],
-    "pilav": [130, 2.7],
-    "bulgur pilavı": [120, 3.1],
-    "makarna": [158, 5.8],
-    "kuru fasulye": [120, 7],
-    "nohut": [164, 9],
-    "mercimek çorbası": [90, 4.5],
-    "menemen": [110, 5],
-    "omlet": [154, 11],
-    "börek": [280, 8],
-    "lahmacun": [220, 11],
-    "pide": [260, 9],
-    "pizza": [266, 11],
-    "hamburger": [250, 13],
-    "patates kızartması": [312, 3.4],
-    "simit": [300, 10],
-    "poğaça": [320, 8],
-    // Atıştırmalık & Tatlı
-    "fındık": [628, 15],
-    "ceviz": [654, 15],
-    "badem": [579, 21],
-    "yer fıstığı": [567, 26],
-    "zeytin": [115, 0.8],
-    "bal": [304, 0.3],
-    "tahin": [595, 17],
-    "sütlü çikolata": [535, 7.6],
-    "patlamış mısır": [387, 12],
-    "kurabiye": [450, 6],
-    "dondurma": [207, 3.5],
-    "baklava": [430, 6],
-    "kola": [42, 0],
-    // --- Genişletme (Eyl 2026 araştırması, 100 g başına kalori/protein) ---
-    // Sokak yemekleri
-    "döner": [240, 13],
-    "tavuk döner": [190, 17],
-    "iskender": [210, 12],
-    "döner dürüm": [184, 12],
-    "çiğ börek": [290, 9],
-    "gözleme": [220, 8],
-    "tost": [250, 12],
-    "mantı": [160, 7],
-    // Ev yemekleri
-    "karnıyarık": [123, 6],
-    "musakka": [80, 3],
-    "imam bayıldı": [129, 2],
-    "yaprak sarma": [140, 3],
-    "barbunya": [143, 6],
-    "bezelye": [84, 6],
-    "bamya": [36, 2],
-    "enginar": [53, 3],
-    // Balık & deniz
-    "levrek": [93, 19],
-    "alabalık": [168, 18],
-    "palamut": [168, 24],
-    "sardalya": [170, 20],
-    "karides": [99, 24],
-    "kalamar": [175, 12],
-    // Et & şarküteri
-    "hindi": [160, 22],
-    "pastırma": [250, 29],
-    "salam": [450, 24],
-    "sosis": [300, 15],
-    "ciğer": [140, 19],
-    // Meyve
-    "armut": [61, 0.4],
-    "kiraz": [70, 1.3],
-    "kayısı": [51, 1],
-    "şeftali": [38, 0.6],
-    "incir": [80, 1.2],
-    "erik": [75, 0.8],
-    "mandalina": [46, 0.8],
-    "greyfurt": [41, 0.5],
-    "nar": [83, 1],
-    "dut": [93, 0.9],
-    // Tatlı
-    "sütlaç": [140, 3.4],
-    "kadayıf": [290, 4.3],
-    "künefe": [350, 7],
-    "şöbiyet": [300, 3.5],
-    "irmik helvası": [302, 3.8],
-    "muhallebi": [173, 5],
-    "revani": [260, 4],
-    "reçel": [275, 0.6],
-    "kek": [400, 6],
-    // Kahvaltı & sos
-    "kaymak": [560, 3],
-    "pekmez": [290, 1],
-    "fıstık ezmesi": [588, 25],
-    "tereyağı": [717, 0.9],
-    "zeytinyağı": [884, 0],
-    "ketçap": [106, 2],
-    "mayonez": [680, 1],
-    // Kuru yemiş & kurutulmuş
-    "ay çekirdeği": [560, 24],
-    "kabak çekirdeği": [610, 30],
-    "kestane": [194, 2.9],
-    "kuru kayısı": [260, 5],
-    "kuru incir": [274, 4.3],
-    "kuru üzüm": [290, 2.5],
-    // Diğer
-    "bisküvi": [462, 5.4],
-    "cips": [536, 6],
-    "çay": [1, 0],
-    "limon": [27, 1.1],
-    "portakal suyu": [45, 0.7],
-    "turşu": [10, 0.6],
-    "mısır": [96, 3.4],
-    "su": [0, 0]
+    "salatalık": [15, 0.7, 3.2, 0.1],
+    "domates": [18, 0.9, 3.9, 0.2],
+    "yeşil biber": [20, 0.9, 4.6, 0.2],
+    "patlıcan": [25, 1, 5.6, 0.2],
+    "kabak": [17, 1.2, 3.1, 0.3],
+    "havuç": [41, 0.9, 9.6, 0.2],
+    "patates": [87, 2, 19, 0.1],
+    "soğan": [40, 1.1, 8.7, 0.1],
+    "marul": [15, 1.4, 2.5, 0.2],
+    "ıspanak": [23, 2.9, 3.6, 0.4],
+    "brokoli": [34, 2.8, 6.6, 0.4],
+    "mantar": [22, 3.1, 3.3, 0.3],
+    "avokado": [160, 2, 8.5, 15],
+    "muz": [89, 1.1, 22.8, 0.3],
+    "elma": [52, 0.3, 13.8, 0.2],
+    "portakal": [47, 0.9, 11.8, 0.1],
+    "üzüm": [69, 0.7, 17.3, 0.3],
+    "karpuz": [30, 0.6, 6.4, 0.2],
+    "kavun": [34, 0.8, 8.2, 0.2],
+    "çilek": [32, 0.7, 7.7, 0.3],
+    "yumurta": [155, 13, 1.1, 11],
+    "tavuk göğsü": [165, 31, 0, 3.6],
+    "tavuk but": [209, 26, 0, 10.9],
+    "tavuk": [180, 27, 0, 7],
+    "kıyma": [240, 25, 0, 15],
+    "köfte": [240, 17, 8, 16],
+    "dana eti": [220, 26, 0, 12],
+    "kuzu eti": [294, 25, 0, 21],
+    "sucuk": [300, 18, 1, 24],
+    "somon": [208, 20, 0, 13],
+    "hamsi": [130, 19, 0, 5],
+    "uskumru": [150, 18, 0, 7.3],
+    "ton balığı": [116, 26, 0, 1],
+    "süt": [61, 3.2, 4.8, 3.3],
+    "yoğurt": [61, 3.5, 4.7, 3.3],
+    "süzme yoğurt": [97, 9, 4, 5],
+    "ayran": [37, 1.6, 2.6, 1.9],
+    "beyaz peynir": [264, 17, 1.9, 21],
+    "kaşar peyniri": [330, 24, 2.4, 25],
+    "lor peyniri": [98, 12, 3.4, 4],
+    "beyaz ekmek": [265, 9, 49, 3.2],
+    "tam buğday ekmeği": [247, 13, 41, 3.4],
+    "pilav": [130, 2.7, 28, 1.1],
+    "bulgur pilavı": [120, 3.1, 22, 2],
+    "makarna": [158, 5.8, 31, 0.9],
+    "kuru fasulye": [120, 7, 18, 3],
+    "nohut": [164, 9, 27, 2.6],
+    "mercimek çorbası": [90, 4.5, 14, 2],
+    "menemen": [110, 5, 6, 7],
+    "omlet": [154, 11, 1, 12],
+    "börek": [280, 8, 30, 14],
+    "lahmacun": [220, 11, 30, 6],
+    "pide": [260, 9, 47, 5],
+    "pizza": [266, 11, 33, 10],
+    "hamburger": [250, 13, 25, 10],
+    "patates kızartması": [312, 3.4, 41, 15],
+    "simit": [300, 10, 57, 5],
+    "poğaça": [320, 8, 38, 15],
+    "fındık": [628, 15, 17, 60],
+    "ceviz": [654, 15, 15.8, 65],
+    "badem": [579, 21, 21.6, 50],
+    "yer fıstığı": [567, 26, 16, 49],
+    "zeytin": [115, 0.8, 3, 11],
+    "bal": [304, 0.3, 82, 0],
+    "tahin": [595, 17, 21, 54],
+    "sütlü çikolata": [535, 7.6, 59, 30],
+    "patlamış mısır": [387, 12, 78, 4.5],
+    "kurabiye": [450, 6, 60, 20],
+    "dondurma": [207, 3.5, 24, 11],
+    "baklava": [430, 6, 50, 23],
+    "kola": [42, 0, 10.6, 0],
+    "döner": [240, 13, 5, 16],
+    "tavuk döner": [190, 17, 6, 8],
+    "iskender": [210, 12, 18, 11],
+    "döner dürüm": [184, 12, 20, 6],
+    "çiğ börek": [290, 9, 24, 17],
+    "gözleme": [220, 8, 28, 8],
+    "tost": [250, 12, 27, 10],
+    "mantı": [160, 7, 20, 5],
+    "karnıyarık": [123, 6, 8, 7],
+    "musakka": [80, 3, 6, 5],
+    "imam bayıldı": [129, 2, 9, 9],
+    "yaprak sarma": [140, 3, 17, 7],
+    "barbunya": [143, 6, 18, 5],
+    "bezelye": [84, 6, 14.4, 0.4],
+    "bamya": [36, 2, 7.6, 0.3],
+    "enginar": [53, 3, 7.8, 0.2],
+    "levrek": [93, 19, 0, 1.2],
+    "alabalık": [168, 18.3, 0, 10],
+    "palamut": [168, 24, 0, 7.3],
+    "sardalya": [170, 20, 0, 9],
+    "karides": [99, 24, 0.2, 0.3],
+    "kalamar": [175, 12, 8, 10],
+    "hindi": [160, 22, 0, 8],
+    "pastırma": [250, 29, 1, 14],
+    "salam": [450, 24, 1.2, 38],
+    "sosis": [300, 15, 2, 26],
+    "ciğer": [140, 19, 4, 5],
+    "armut": [61, 0.4, 15.3, 0.2],
+    "kiraz": [70, 1.3, 16, 0.3],
+    "kayısı": [51, 1, 12.9, 0.2],
+    "şeftali": [38, 0.6, 9.7, 0.1],
+    "incir": [80, 1.2, 20.4, 0.4],
+    "erik": [75, 0.8, 19.7, 0.2],
+    "mandalina": [46, 0.8, 11.6, 0.2],
+    "greyfurt": [41, 0.5, 10.6, 0.1],
+    "nar": [83, 1, 19, 1.2],
+    "dut": [93, 0.9, 19.8, 1.1],
+    "limon": [27, 1.1, 8.2, 0.3],
+    "sütlaç": [140, 3.4, 24, 3],
+    "kadayıf": [290, 4.3, 47, 10],
+    "künefe": [350, 7, 40, 18],
+    "şöbiyet": [300, 3.5, 45, 8.5],
+    "irmik helvası": [302, 3.8, 43.6, 12.5],
+    "muhallebi": [173, 5.1, 29.8, 3.8],
+    "revani": [260, 4, 40, 9],
+    "reçel": [275, 0.6, 70, 0.5],
+    "kek": [400, 6, 55, 18],
+    "kaymak": [560, 3, 3, 58],
+    "pekmez": [290, 1, 70, 0.2],
+    "fıstık ezmesi": [588, 25, 20, 50],
+    "tereyağı": [717, 0.9, 0.1, 81],
+    "zeytinyağı": [884, 0, 0, 100],
+    "ketçap": [106, 2, 25, 0.5],
+    "mayonez": [680, 1, 2, 75],
+    "ay çekirdeği": [560, 24, 20, 47.3],
+    "kabak çekirdeği": [610, 30.1, 10, 50],
+    "kestane": [194, 2.9, 42, 1.5],
+    "kuru kayısı": [260, 5, 66.5, 0.5],
+    "kuru incir": [274, 4.3, 70, 1.3],
+    "kuru üzüm": [290, 2.5, 77.5, 0.2],
+    "bisküvi": [462, 5.4, 74.5, 16],
+    "cips": [536, 6, 53, 34],
+    "çay": [1, 0, 0.2, 0],
+    "portakal suyu": [45, 0.7, 10, 0.2],
+    "turşu": [10, 0.6, 2, 0.2],
+    "mısır": [96, 3.4, 21, 1.5],
+    "su": [0, 0, 0, 0],
   };
 
 </script>
@@ -284,13 +364,17 @@
     const kalori = Math.round(deger[0] * gram / 100);
     const protein = Math.round(deger[1] * gram / 100 * 10) / 10;
     const liste = kayitlariAl();
+    const karb = Math.round((deger[2] || 0) * gram / 100);
+    const yag = Math.round((deger[3] || 0) * gram / 100);
     liste.push({
       tarih: bugun(),
       saat: new Date().toTimeString().slice(0, 5),
       yemek: ad,
       gram: gram,
       kalori: kalori,
-      protein: protein
+      protein: protein,
+      karb: karb,
+      yag: yag
     });
     kayitlariKaydet(liste);
     return { kalori: kalori, protein: protein };
@@ -341,6 +425,7 @@
 
     const s = ekle(ad, gram);
     sonuc.textContent = "✓ Eklendi: " + gram + " g " + ad + " — " + s.kalori + " kcal, " + s.protein + " g protein";
+    if (typeof hizliEkle === "function") hizliEkle(ad, gram);
     giris.value = "";
   }
 
@@ -416,6 +501,7 @@
     }
     const s = ekle(ad, gram);
     sonuc.textContent = "✓ Eklendi: " + gram + " g " + ad + " — " + s.kalori + " kcal, " + s.protein + " g protein";
+    if (typeof hizliEkle === "function") hizliEkle(ad, gram);
     manuelForm.style.display = "none";
     giris.value = "";
   });
@@ -468,17 +554,60 @@
   const ozetKal = document.getElementById("ozetKal");
   const ozetPro = document.getElementById("ozetPro");
 
+  function hedefleriAl() {
+    return JSON.parse(localStorage.getItem("hedefler") || '{"kalori":2000,"protein":100}');
+  }
+
   function ozetCiz() {
     const b = bugun();
-    let kal = 0, pro = 0;
+    let kal = 0, pro = 0, karb = 0, yag = 0;
     for (const k of kayitlariAl()) {
       if (k.tarih !== b) continue;
       kal += k.kalori;
       pro += k.protein;
+      karb += (k.karb || 0);
+      yag += (k.yag || 0);
     }
     ozetKal.textContent = Math.round(kal);
     ozetPro.textContent = Math.round(pro * 10) / 10;
+    document.getElementById("ozetKarb").textContent = Math.round(karb);
+    document.getElementById("ozetYag").textContent = Math.round(yag);
+
+    const h = hedefleriAl();
+    const pk = Math.min(100, Math.round(kal / h.kalori * 100));
+    const pp = Math.min(100, Math.round(pro / h.protein * 100));
+    document.getElementById("barKal").style.width = pk + "%";
+    document.getElementById("barPro").style.width = pp + "%";
+    document.getElementById("barKalYazi").textContent =
+      Math.round(kal) + " / " + h.kalori + " (" + pk + "%)";
+    document.getElementById("barProYazi").textContent =
+      Math.round(pro * 10) / 10 + " / " + h.protein + " (" + pp + "%)";
   }
+
+  // Hedef girisi
+  const hedefBtn = document.getElementById("hedefBtn");
+  const hedefGirisi = document.getElementById("hedefGirisi");
+  hedefBtn.addEventListener("click", function () {
+    const h = hedefleriAl();
+    document.getElementById("hedefKal").value = h.kalori;
+    document.getElementById("hedefPro").value = h.protein;
+    hedefGirisi.style.display = hedefGirisi.style.display === "block" ? "none" : "block";
+  });
+  document.getElementById("hedefKaydet").addEventListener("click", function () {
+    const k = parseInt(document.getElementById("hedefKal").value);
+    const p = parseInt(document.getElementById("hedefPro").value);
+    if (!k || k < 500) {
+      sonuc.textContent = "Kalori hedefi en az 500 olmalı.";
+      return;
+    }
+    localStorage.setItem("hedefler", JSON.stringify({
+      kalori: k,
+      protein: p || 100
+    }));
+    hedefGirisi.style.display = "none";
+    ozetCiz();
+    sonuc.textContent = "✓ Hedefler kaydedildi.";
+  });
 
   // Liste her çizildiğinde (ekleme/silme) özet de kendiliğinden güncellensin
   const orijinalCiz = listeyiCiz;
@@ -508,4 +637,39 @@
   tarihYaz();
   setInterval(tarihYaz, 30000);
 </script>
+<script>
+  // ---- HIZLI TEKRAR EKLEME (son 8 benzersiz) ----
+  const hizliKutusu = document.getElementById("hizliKutusu");
+
+  function hizliKayitlariAl() {
+    return JSON.parse(localStorage.getItem("hizliYemekler") || "[]");
+  }
+
+  // en ondegram: {ad, gram} — akilliEkle ve manuel ekleme sonrasi cagirilir
+  function hizliEkle(ad, gram) {
+    let liste = hizliKayitlariAl();
+    liste = liste.filter(function (h) { return h.ad !== ad || h.gram !== gram; });
+    liste.unshift({ ad: ad, gram: gram });
+    localStorage.setItem("hizliYemekler", JSON.stringify(liste.slice(0, 8)));
+    hizliCiz();
+  }
+
+  function hizliCiz() {
+    hizliKutusu.innerHTML = "";
+    const liste = hizliKayitlariAl();
+    for (const h of liste) {
+      const btn = document.createElement("button");
+      btn.textContent = h.ad + " " + h.gram + " g";
+      btn.addEventListener("click", function () {
+        const s = ekle(h.ad, h.gram);
+        sonuc.textContent = "✓ Eklendi: " + h.gram + " g " + h.ad +
+          " — " + s.kalori + " kcal, " + s.protein + " g protein";
+      });
+      hizliKutusu.appendChild(btn);
+    }
+  }
+
+  hizliCiz();
+</script>
+
 </html>

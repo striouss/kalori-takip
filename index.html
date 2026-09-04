@@ -4,6 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kalori Takip</title>
+  <style>
+  @font-face {
+    font-family: "Panforte Serif";
+    src: url("panforte_serif_regular.ttf");
+  }
+  body {
+    font-family: "Panforte Serif", serif;
+    background: #faf7f2;
+    color: #3d2f23;
+    padding: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  button {
+    background-color: #C19A6B;
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  input[type="text"], input[type="number"], select {
+    border: 2px solid #C19A6B;
+    border-radius: 14px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 15px;
+    background: #ffffff;
+    color: inherit;
+  }
+  input:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(193,154,107,0.35);
+  }
+</style>
 </head>
 <body>
   <h1>Kalori Takip</h1>
@@ -27,6 +64,7 @@
     </div>
   </div>
     <h2>Bugün yediklerim</h2>
+      <p id="tarihSaat" style="margin-top:4px;color:#8a7561"></p>
   <ul id="gunListesi"></ul>
 </body>
 <script>
@@ -373,5 +411,23 @@
 
   // Sayfa açılınca da hesapla
   ozetCiz();
+</script>
+<script>
+  // ---- GÜNÜN TARİHİ VE SAATİ ----
+  const tarihSaat = document.getElementById("tarihSaat");
+
+  function tarihYaz() {
+    const simdiki = new Date();
+    const gun = simdiki.toLocaleDateString("tr-TR", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric"
+    });
+    const saat = simdiki.toLocaleTimeString("tr-TR", {
+      hour: "2-digit", minute: "2-digit"
+    });
+    tarihSaat.textContent = gun + " · " + saat;
+  }
+
+  tarihYaz();
+  setInterval(tarihYaz, 30000);
 </script>
 </html>

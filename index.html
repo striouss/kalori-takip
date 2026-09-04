@@ -145,7 +145,84 @@
     "kurabiye": [450, 6],
     "dondurma": [207, 3.5],
     "baklava": [430, 6],
-    "kola": [42, 0]
+    "kola": [42, 0],
+    // --- Genişletme (Eyl 2026 araştırması, 100 g başına kalori/protein) ---
+    // Sokak yemekleri
+    "döner": [240, 13],
+    "tavuk döner": [190, 17],
+    "iskender": [210, 12],
+    "döner dürüm": [184, 12],
+    "çiğ börek": [290, 9],
+    "gözleme": [220, 8],
+    "tost": [250, 12],
+    "mantı": [160, 7],
+    // Ev yemekleri
+    "karnıyarık": [123, 6],
+    "musakka": [80, 3],
+    "imam bayıldı": [129, 2],
+    "yaprak sarma": [140, 3],
+    "barbunya": [143, 6],
+    "bezelye": [84, 6],
+    "bamya": [36, 2],
+    "enginar": [53, 3],
+    // Balık & deniz
+    "levrek": [93, 19],
+    "alabalık": [168, 18],
+    "palamut": [168, 24],
+    "sardalya": [170, 20],
+    "karides": [99, 24],
+    "kalamar": [175, 12],
+    // Et & şarküteri
+    "hindi": [160, 22],
+    "pastırma": [250, 29],
+    "salam": [450, 24],
+    "sosis": [300, 15],
+    "ciğer": [140, 19],
+    // Meyve
+    "armut": [61, 0.4],
+    "kiraz": [70, 1.3],
+    "kayısı": [51, 1],
+    "şeftali": [38, 0.6],
+    "incir": [80, 1.2],
+    "erik": [75, 0.8],
+    "mandalina": [46, 0.8],
+    "greyfurt": [41, 0.5],
+    "nar": [83, 1],
+    "dut": [93, 0.9],
+    // Tatlı
+    "sütlaç": [140, 3.4],
+    "kadayıf": [290, 4.3],
+    "künefe": [350, 7],
+    "şöbiyet": [300, 3.5],
+    "irmik helvası": [302, 3.8],
+    "muhallebi": [173, 5],
+    "revani": [260, 4],
+    "reçel": [275, 0.6],
+    "kek": [400, 6],
+    // Kahvaltı & sos
+    "kaymak": [560, 3],
+    "pekmez": [290, 1],
+    "fıstık ezmesi": [588, 25],
+    "tereyağı": [717, 0.9],
+    "zeytinyağı": [884, 0],
+    "ketçap": [106, 2],
+    "mayonez": [680, 1],
+    // Kuru yemiş & kurutulmuş
+    "ay çekirdeği": [560, 24],
+    "kabak çekirdeği": [610, 30],
+    "kestane": [194, 2.9],
+    "kuru kayısı": [260, 5],
+    "kuru incir": [274, 4.3],
+    "kuru üzüm": [290, 2.5],
+    // Diğer
+    "bisküvi": [462, 5.4],
+    "cips": [536, 6],
+    "çay": [1, 0],
+    "limon": [27, 1.1],
+    "portakal suyu": [45, 0.7],
+    "turşu": [10, 0.6],
+    "mısır": [96, 3.4],
+    "su": [0, 0]
   };
 
 </script>
@@ -253,11 +330,12 @@
       return;
     }
 
-    // "gr/gram" yazılmamış ve sayı küçükse (ör. "2 yumurta") adet say
+    // KURAL: "gr/gram" veya birim yoksa HER ZAMAN gram ("20 salatalık" = 20 g).
+    // Birim kelimesi varsa (adet/tane/fincan/bardak/dilim/kase/kaşık) adet say:
+    // "20 fincan kahve" = 20 x 100 g, "2 bardak süt" = 2 x 200 g.
     let gram = miktar;
-    const gramYazilmis = /gr/.test(metin);
-    const adetYazilmis = /adet|tane/.test(metin);
-    if (adetYazilmis || (!gramYazilmis && miktar < 20)) {
+    const adetYazilmis = /adet|tane|fincan|bardak|dilim|kase|kaşık/.test(metin);
+    if (adetYazilmis) {
       gram = miktar * (ADET_GRAM[ad] || 100);
     }
 

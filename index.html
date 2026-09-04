@@ -40,6 +40,46 @@
     outline: none;
     box-shadow: 0 0 0 2px rgba(193,154,107,0.35);
   }
+  /* ---- Hizalama ---- */
+  body {
+    line-height: 1.45;
+  }
+  input[type="text"], input[type="number"], select, button {
+    vertical-align: middle;
+  }
+  h1 {
+    margin: 0 0 12px 0;
+    line-height: 1.2;
+  }
+  h2 {
+    margin: 18px 0 6px 0;
+    line-height: 1.2;
+  }
+  #sonuc {
+    margin: 8px 0;
+    min-height: 20px;
+  }
+  ul {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+  li {
+    margin-bottom: 8px;
+  }
+  li button {
+    margin-left: 8px;
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+  .hedefSatir {
+    min-height: 24px;
+  }
+  .barEtiket {
+    min-width: 52px;
+  }
+  .hedefSatir .barZemin {
+    min-width: 80px;
+  }
   /* ---- Yeni bolumler ---- */
   .hedefKarti {
     background: #ffffff;
@@ -75,6 +115,8 @@
     display: none;
     margin-top: 10px;
     gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
   }
   #hedefGirisi input {
     width: 90px;
@@ -303,6 +345,29 @@
     "turşu": [10, 0.6, 2, 0.2],
     "mısır": [96, 3.4, 21, 1.5],
     "su": [0, 0, 0, 0],
+    // --- Paketli & temel gıdalar (Eyl 2026, 100 g başına) ---
+    "yulaf ezmesi": [389, 16.9, 66.3, 6.9],
+    "mısır gevreği": [386, 7, 84, 1.6],
+    "granola": [471, 10, 64, 20],
+    "kinoa": [120, 4.4, 21, 1.9],
+    "kuskus": [112, 3.8, 23, 0.2],
+    "erişte": [140, 5, 26, 1],
+    "şeker": [384, 0, 99.5, 0],
+    "nutella": [539, 6.3, 57.5, 30.9],
+    "kraker": [500, 8, 60, 25],
+    "gofret": [545, 6, 53, 33],
+    "krem peynir": [330, 8, 4, 32],
+    "labne": [230, 8, 3, 21],
+    "nugget": [296, 15, 16, 19],
+    "tahin pekmez": [442, 9, 45.5, 27],
+    "meyve suyu": [54, 0.4, 13, 0.1],
+    "limonata": [40, 0.1, 10, 0],
+    "soda": [0, 0, 0, 0],
+    "mercimek köftesi": [150, 6, 22, 4],
+    "falafel": [333, 13, 32, 17.8],
+    "protein barı": [370, 30, 35, 9],
+    "galeta": [387, 12.6, 68, 5.6],
+    "mısır cipsi": [500, 7, 60, 26]
   };
 
 </script>
@@ -591,7 +656,7 @@
     const h = hedefleriAl();
     document.getElementById("hedefKal").value = h.kalori;
     document.getElementById("hedefPro").value = h.protein;
-    hedefGirisi.style.display = hedefGirisi.style.display === "block" ? "none" : "block";
+    hedefGirisi.style.display = hedefGirisi.style.display === "flex" ? "none" : "flex";
   });
   document.getElementById("hedefKaydet").addEventListener("click", function () {
     const k = parseInt(document.getElementById("hedefKal").value);
